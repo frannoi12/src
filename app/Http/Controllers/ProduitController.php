@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Produit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class ProduitController extends Controller
 {
@@ -13,10 +16,16 @@ class ProduitController extends Controller
     public function index(Request $request)
     {
         $search = $request->input("search");
-        $produits = Produit::where("libelle","like", "%".$search."%")
+        $pagination_number = 10;
+        if($search){
+            $produits = Produit::where("libelle","like", "%".$search."%")
                         ->orWhere("prix","like", "%".$search."%")
                         ->orWhere("quantite","like", "%".$search."%")
-                        ->paginate(10);
+                        ->paginate($pagination_number);
+        }else{
+            $produits = Produit::paginate($pagination_number);
+        }
+
         return view('produits.index',compact('produits',"search"));
     }
 
@@ -25,7 +34,7 @@ class ProduitController extends Controller
      */
     public function create()
     {
-        //
+        return view("produits.create");
     }
 
     /**
@@ -33,7 +42,23 @@ class ProduitController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'libelle' => 'required|string|max:255',
+            'prix' => 'required|integer',
+            'quantite' => 'required|integer',
+        ]);
+
+        // dd($request->input("image"));
+
+
+        $produit = new Produit();
+        $produit->libelle = $request->libelle;
+        $produit->prix = $request->prix;
+        $produit->quantite = $request->quantite;
+        $path = $request->file('image'); // 'public/images' est le répertoire de stockage
+        $produit->image = str_replace('public/', '', $path); // Mettez à jour le chemin de stockage dans la base de données
+        $produit->save();
+        return redirect()->route('produits.index');
     }
 
     /**
@@ -41,7 +66,8 @@ class ProduitController extends Controller
      */
     public function show(Produit $produit)
     {
-        //
+        $produit = Produit::findOrFail($produit->id);
+        return view('produits.show', compact('produit'));
     }
 
     /**
@@ -49,7 +75,8 @@ class ProduitController extends Controller
      */
     public function edit(Produit $produit)
     {
-        //
+        $produit = Produit::findOrFail($produit->id);
+        return view('produits.edit', compact('produit'));
     }
 
     /**
@@ -57,7 +84,19 @@ class ProduitController extends Controller
      */
     public function update(Request $request, Produit $produit)
     {
-        //
+        $request->validate([
+            'libelle' => 'required|string|max:255',
+            'prix' => 'required|integer',
+            'quantite' => 'required|integer',
+        ]);
+
+        $produit = Produit::findOrFail($produit->id);
+        $produit->libelle = $request->libelle;
+        $produit->prix = $request->prix;
+        $produit->quantite = $request->quantite;
+        $produit->save();
+
+        return redirect()->route('produits.index')->with('success', 'Produit mis à jour avec succès');
     }
 
     /**
@@ -65,6 +104,9 @@ class ProduitController extends Controller
      */
     public function destroy(Produit $produit)
     {
-        //
+        // dd($produit);
+        $produit = Produit::findOrFail($produit->id);
+        $produit->delete();
+        return redirect()->route('produits.index')->with('success', 'Produit supprimé avec succès');
     }
 }
