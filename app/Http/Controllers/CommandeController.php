@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Commande;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class CommandeController extends Controller
@@ -10,9 +11,22 @@ class CommandeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $search = $request->input("search");
+        $pagination_number = 10;
+
+        // Recherche des commandes par client, montant ou vendeur_id
+        if ($search) {
+            $commandes = Commande::where("client", "like", "%" . $search . "%")
+                ->orWhere("montant", "like", "%" . $search . "%")
+                ->orWhere("vendeur_id", "like", "%" . $search . "%")
+                ->paginate($pagination_number);
+        } else {
+            $commandes = Commande::paginate($pagination_number);
+        }
+
+        return view('commandes.index', compact('commandes', 'search'));
     }
 
     /**
@@ -20,7 +34,10 @@ class CommandeController extends Controller
      */
     public function create()
     {
-        //
+        // Récupération des utilisateurs pour le champ vendeur_id
+        $vendeurs = User::pluck('name', 'id');
+
+        return view('commandes.create', compact('vendeurs'));
     }
 
     /**
@@ -28,7 +45,22 @@ class CommandeController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validation des données
+        $request->validate([
+            'client' => 'required|string|max:255',
+            'montant' => 'required|integer',
+            'vendeur_id' => 'required|exists:users,id',
+        ]);
+
+        // Création de la commande
+        $commande = new Commande();
+        $commande->client = $request->client;
+        $commande->date = now(); // Date du jour
+        $commande->montant = $request->montant;
+        $commande->vendeur_id = $request->vendeur_id;
+        $commande->save();
+
+        return redirect()->route('commandes.index')->with('success', 'Commande créée avec succès');
     }
 
     /**
@@ -36,7 +68,10 @@ class CommandeController extends Controller
      */
     public function show(Commande $commande)
     {
-        //
+        // Récupération des données nécessaires pour la vue show
+        $vendeur = $commande->vendeur()->first();
+
+        return view('commandes.show', compact('commande', 'vendeur'));
     }
 
     /**
@@ -44,7 +79,10 @@ class CommandeController extends Controller
      */
     public function edit(Commande $commande)
     {
-        //
+        // Récupération des utilisateurs pour le champ vendeur_id
+        $vendeurs = User::pluck('name', 'id');
+
+        return view('commandes.edit', compact('commande', 'vendeurs'));
     }
 
     /**
@@ -52,7 +90,20 @@ class CommandeController extends Controller
      */
     public function update(Request $request, Commande $commande)
     {
-        //
+        // Validation des données
+        $request->validate([
+            'client' => 'required|string|max:255',
+            'montant' => 'required|integer',
+            'vendeur_id' => 'required|exists:users,id',
+        ]);
+
+        // Mise à jour de la commande
+        $commande->client = $request->client;
+        $commande->montant = $request->montant;
+        $commande->vendeur_id = $request->vendeur_id;
+        $commande->save();
+
+        return redirect()->route('commandes.index')->with('success', 'Commande mise à jour avec succès');
     }
 
     /**
@@ -60,6 +111,9 @@ class CommandeController extends Controller
      */
     public function destroy(Commande $commande)
     {
-        //
+        // Suppression de la commande
+        $commande->delete();
+
+        return redirect()->route('commandes.index')->with('success', 'Commande supprimée avec succès');
     }
 }
