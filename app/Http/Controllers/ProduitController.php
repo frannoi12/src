@@ -17,16 +17,16 @@ class ProduitController extends Controller
     {
         $search = $request->input("search");
         $pagination_number = 10;
-        if($search){
-            $produits = Produit::where("libelle","like", "%".$search."%")
-                        ->orWhere("prix","like", "%".$search."%")
-                        ->orWhere("quantite","like", "%".$search."%")
-                        ->paginate($pagination_number);
-        }else{
+        if ($search) {
+            $produits = Produit::where("libelle", "like", "%" . $search . "%")
+                ->orWhere("prix", "like", "%" . $search . "%")
+                ->orWhere("quantite", "like", "%" . $search . "%")
+                ->paginate($pagination_number);
+        } else {
             $produits = Produit::paginate($pagination_number);
         }
 
-        return view('produits.index',compact('produits',"search"));
+        return view('produits.index', compact('produits', "search"));
     }
 
     /**
@@ -42,24 +42,36 @@ class ProduitController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        // Définir les règles de validation
+        $validatedData = $request->validate([
             'libelle' => 'required|string|max:255',
             'prix' => 'required|integer',
             'quantite' => 'required|integer',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Règles pour l'image
         ]);
 
-        // dd($request->input("image"));
+        // Manipulation des données
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('images', 'public');
+            $validatedData['image'] = $imagePath;
+        }
 
+        // dd($validatedData);
 
+        // Créer un nouveau produit
         $produit = new Produit();
-        $produit->libelle = $request->libelle;
-        $produit->prix = $request->prix;
-        $produit->quantite = $request->quantite;
-        $path = $request->file('image'); // 'public/images' est le répertoire de stockage
-        $produit->image = str_replace('public/', '', $path); // Mettez à jour le chemin de stockage dans la base de données
+        $produit->libelle = $validatedData['libelle'];
+        $produit->prix = $validatedData['prix'];
+        $produit->quantite = $validatedData['quantite'];
+        if (isset($validatedData['image'])) {
+            $produit->image = $validatedData['image'];
+        }
+
         $produit->save();
-        return redirect()->route('produits.index');
+
+        return redirect()->route('produits.index')->with('success', 'Produit créé avec succès.');
     }
+
 
     /**
      * Display the specified resource.
@@ -84,20 +96,41 @@ class ProduitController extends Controller
      */
     public function update(Request $request, Produit $produit)
     {
-        $request->validate([
+        // Définir les règles de validation
+        $validatedData = $request->validate([
             'libelle' => 'required|string|max:255',
             'prix' => 'required|integer',
             'quantite' => 'required|integer',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Règles pour l'image
         ]);
 
+        // Recherche du produit par son ID
         $produit = Produit::findOrFail($produit->id);
-        $produit->libelle = $request->libelle;
-        $produit->prix = $request->prix;
-        $produit->quantite = $request->quantite;
+
+        // Mise à jour des champs du produit
+        $produit->libelle = $validatedData['libelle'];
+        $produit->prix = $validatedData['prix'];
+        $produit->quantite = $validatedData['quantite'];
+
+        // Vérification et stockage de la nouvelle image
+        if ($request->hasFile('image')) {
+            // Supprimer l'ancienne image si elle existe
+            if ($produit->image) {
+                Storage::disk('public')->delete($produit->image);
+            }
+
+            // Stocker la nouvelle image
+            $imagePath = $request->file('image')->store('images', 'public');
+            $produit->image = $imagePath;
+        }
+
+        // Enregistrer les modifications
         $produit->save();
 
+        // Rediriger avec un message de succès
         return redirect()->route('produits.index')->with('success', 'Produit mis à jour avec succès');
     }
+
 
     /**
      * Remove the specified resource from storage.
