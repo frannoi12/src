@@ -42,13 +42,13 @@
                             @forelse ($commandes as $commande)
                                 <tr class="bg-gray-100">
                                     <td class="py-3 px-6">
+                                        {{$commande->vendeur->name}}
+                                    </td>
+                                    <td class="py-3 px-6">
                                         {{$commande->client}}
                                     </td>
                                     <td class="py-3 px-6">
                                         {{$commande->montant}}
-                                    </td>
-                                    <td class="py-3 px-6">
-                                        {{$commande->vendeur}}
                                     </td>
                                     <td class="py-3 px-6">
                                         <a href="">
