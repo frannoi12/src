@@ -15,7 +15,11 @@ class LigneCommande extends Model
         "produit_id",
         "commande_id",
     ];
-    public function produits() : BelongsTo{
+    public function produit() : BelongsTo{
+        return $this->belongsTo(Produit::class);
+    }
+
+    public function commandes() : BelongsTo{
         return $this->belongsTo(Commande::class);
     }
 }

@@ -7,28 +7,36 @@
 \usepackage{amssymb}
 \usepackage{lmodern}
 \usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{array}  % Pour améliorer les tableaux
+
 \begin{document}
+
 \begin{center}
-\begin{LARGE}
-\textbf{FACTURE}
-\end{LARGE}
+    \begin{LARGE}
+        \textbf{FACTURE}
+    \end{LARGE}
 \end{center}
-\begin{center}
-\begin{flushleft}
-Date: 29/11/2023 \\
-Nom du client : {{ "Je suis dans un fichier .blade.php" }} (nom du client)
-\end{flushleft}
+
 \vspace{0.5cm}
-\begin{tabular}{|p{1.5cm}|p{10cm}|p{1.5cm}|p{3cm}|}
-\hline
-Quantité & Désignation & Prix Unitaire & Total \\
-\hline
-- & - & - & - \\
-\hline
-- & - & - & - \\
-\hline
-\multicolumn{2}{|c|}{Somme total} &  \multicolumn{2}{|c|}{- FCFA}\\
-\hline
+
+\begin{flushleft}
+    Date : {{ $commande->date }} \\
+    Nom du client : {{ $commande->client }} \\
+\end{flushleft}
+
+\vspace{0.5cm}
+
+\begin{tabular}{|p{2cm}|p{10cm}|p{2cm}|p{2cm}|}
+    \hline
+    Quantité & Désignation & Prix Unitaire & Total \\
+    \hline
+    @foreach ($ligneCommandes as $ligneCommande)
+        {{-- {{$ligneCommande->produits}} --}}
+        {{ $ligneCommande->quantite }} & {{ $ligneCommande->produit->libelle }} & {{ number_format($ligneCommande->produit->prix, 2, ',', ' ') }} & {{ number_format($ligneCommande->quantite * $ligneCommande->produit->prix, 2, ',', ' ') }} \\
+        \hline
+    @endforeach
+    \multicolumn{2}{|c|}{\textbf{Somme totale}} & \multicolumn{2}{|c|}{\textbf>{{ number_format($commande->montant, 2, ',', ' ') }} FCFA} \\
+    \hline
 \end{tabular}
-\end{center}
+
 \end{document}

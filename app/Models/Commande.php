@@ -28,7 +28,7 @@ class Commande extends Model
     public function lignecommandes() : HasMany{
         return $this->hasMany(LigneCommande::class);
     }
-    public function vendeur() : BelongsTo{
+    public function user() : BelongsTo{
         return$this->belongsTo(User::class, "vendeur_id");
     }
 }

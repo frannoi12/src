@@ -17,7 +17,7 @@ class Produit extends Model
         'image'
     ];
 
-    public function ligne_commandes(): HasMany
+    public function lignecommandes(): HasMany
     {
         return $this->hasMany(LigneCommande::class);
     }

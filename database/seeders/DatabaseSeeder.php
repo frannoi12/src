@@ -21,6 +21,10 @@ class DatabaseSeeder extends Seeder
             'password' =>Hash::make("93516499"),
         ]);
 
-        Produit::factory()->count(20)->create();
+        Produit::factory()->count(10)->create();
+
+        $this->call([
+            CommandeSeeder::class,
+        ]);
     }
 }

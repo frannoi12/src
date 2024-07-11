@@ -42,7 +42,7 @@
                             @forelse ($commandes as $commande)
                                 <tr class="bg-gray-100">
                                     <td class="py-3 px-6">
-                                        {{$commande->vendeur->name}}
+                                        {{$commande->user->name}}
                                     </td>
                                     <td class="py-3 px-6">
                                         {{$commande->client}}
@@ -51,7 +51,7 @@
                                         {{$commande->montant}}
                                     </td>
                                     <td class="py-3 px-6">
-                                        <a href="">
+                                        <a href="{{route("commandes.facture",$commande->id)}}">
                                             <button class="bg-green-600 hover:bg-green-500 text-white text-sm px-3 py-2 rounded-md">
                                                 {{__('Facture')}}
                                             </button>

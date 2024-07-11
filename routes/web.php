@@ -5,6 +5,7 @@ use App\Http\Controllers\ProduitController;
 
 use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\LigneCommandeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -22,8 +23,11 @@ Route::middleware('auth')->group(function () {
      * Route::ressource('models', Controller::class)
      */
 
+     Route::get('commandes/{commande}/facture', [CommandeController::class, 'generer_facture'])->name('commandes.facture');
+
     Route::resource('commandes',CommandeController::class);
     Route::resource('produits',ProduitController::class);
+    Route::resource('ligneCommandes', LigneCommandeController::class);
 
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

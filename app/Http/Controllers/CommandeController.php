@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Commande;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Ismaelw\LaraTeX\LaraTeX;
 
 class CommandeController extends Controller
 {
@@ -115,5 +116,11 @@ class CommandeController extends Controller
         $commande->delete();
 
         return redirect()->route('commandes.index')->with('success', 'Commande supprimée avec succès');
+    }
+
+    public function generer_facture(Commande $commande){
+        // dd($commande->lignecommandes[0]->produit);
+        // dd($prod);
+        return (new LaraTeX("latex.facture"))->with(["commande"=>$commande,'ligneCommandes' => $commande->lignecommandes,])->download("Facture.pdf");
     }
 }

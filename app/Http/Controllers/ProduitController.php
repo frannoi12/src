@@ -15,7 +15,7 @@ class ProduitController extends Controller
     public function index(Request $request)
     {
         $search = $request->input("search");
-        $pagination_number = 10;
+        $pagination_number = 5;
         if ($search) {
             $produits = Produit::where("libelle", "like", "%" . $search . "%")
                 ->orWhere("prix", "like", "%" . $search . "%")
@@ -33,7 +33,7 @@ class ProduitController extends Controller
      */
     public function create()
     {
-        return view("produits.create");
+        return view("produits.create_or_edit");
     }
 
     /**
@@ -43,10 +43,10 @@ class ProduitController extends Controller
     {
         // Définir les règles de validation
         $validatedData = $request->validate([
-            'libelle' => 'required|string|max:255',
+            'libelle' => 'required|unique:produits,libelle|string|max:255',
             'prix' => 'required|integer',
             'quantite' => 'required|integer',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Règles pour l'image
+            'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Règles pour l'image
         ]);
 
         // Manipulation des données
@@ -87,7 +87,7 @@ class ProduitController extends Controller
     public function edit(Produit $produit)
     {
         $produit = Produit::findOrFail($produit->id);
-        return view('produits.edit', compact('produit'));
+        return view('produits.create_or_edit', compact('produit'));
     }
 
     /**
@@ -97,7 +97,7 @@ class ProduitController extends Controller
     {
         // Définir les règles de validation
         $validatedData = $request->validate([
-            'libelle' => 'required|string|max:255',
+            'libelle' => 'required|string|max:255|unique:produits,libelle,' . $produit->id,
             'prix' => 'required|integer',
             'quantite' => 'required|integer',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Règles pour l'image

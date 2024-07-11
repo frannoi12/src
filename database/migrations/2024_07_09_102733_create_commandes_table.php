@@ -3,6 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+
 
 return new class extends Migration
 {
@@ -14,10 +16,10 @@ return new class extends Migration
         Schema::create('commandes', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('client');
-            $table->datetime('date');
+            $table->timestamp('date')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->integer('montant')->default('0');
             $table->bigInteger('vendeur_id');
-            $table->foreign('vendeur_id')->references('id')->on('users');
+            $table->foreign('vendeur_id')->references('id')->on('users')->onDelete("cascade");
             $table->timestamps();
         });
     }
